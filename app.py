@@ -8,7 +8,7 @@ import io
 
 st.set_page_config(
     page_title="WESAD Stress Detection",
-    page_icon="🫀",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -106,12 +106,19 @@ section[data-testid="stSidebar"] hr {
 .status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     padding: 0.45rem 1rem;
     border-radius: 999px;
     font-weight: 700;
     font-size: 1.05rem;
     color: white;
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+    display: inline-block;
 }
 
 /* Streamlit widget overrides */
@@ -161,6 +168,19 @@ div[data-testid="stMetricValue"] { color: #123C4D !important; font-family: 'Frau
 
 div[data-testid="stAlert"] { border-radius: 10px; }
 footer, .stCaption { color: #7A8C94 !important; }
+
+.badge-label {
+    display: inline-block;
+    background: #F4F9F9;
+    color: #146C6D;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 0.25rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid rgba(20, 108, 109, 0.15);
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -182,7 +202,8 @@ model = load_model()
 # =====================================================
 # HEADER
 # =====================================================
-st.markdown('<div class="hero-title">🫀 WESAD Stress Detection</div>', unsafe_allow_html=True)
+st.markdown('<span class="badge-label">Physiological Signal Classifier</span>', unsafe_allow_html=True)
+st.markdown('<div class="hero-title" style="margin-top:0.6rem;">WESAD Stress Detection</div>', unsafe_allow_html=True)
 st.markdown(
     '<div class="hero-subtitle">A subject-independent CNN model that classifies psychological '
     'state — Baseline, Stress, or Amusement — from 8-channel physiological signals '
@@ -200,7 +221,7 @@ st.markdown("""
 # SIDEBAR — DATA SOURCE
 # =====================================================
 with st.sidebar:
-    st.markdown("### ⚙️ Input Setup")
+    st.markdown("### Input Setup")
     option = st.radio(
         "Data source",
         ["Sample from dataset (demo)", "Upload a .npy file"],
@@ -211,8 +232,8 @@ with st.sidebar:
     true_label_str = None
 
     if option == "Sample from dataset (demo)":
-        X = np.load("data/X.npy")
-        y = np.load("data/y.npy")
+        X = np.load("data/X_demo.npy")
+        y = np.load("data/y_demo.npy")
         sample_idx = st.slider("Sample index", 0, len(X) - 1, 0)
         window = X[sample_idx]
         true_label_map = {1: "Baseline", 2: "Stress", 3: "Amusement"}
@@ -227,21 +248,21 @@ with st.sidebar:
                 window = None
 
     st.markdown("---")
-    st.markdown("### 👁️ Channel Visibility")
+    st.markdown("### Channel Visibility")
     visible_channels = st.multiselect(
         "Channels to plot", CHANNEL_NAMES, default=CHANNEL_NAMES
     )
 
     st.markdown("---")
     if st.session_state.history:
-        if st.button("🗑️ Clear history"):
+        if st.button("Clear history"):
             st.session_state.history = []
             st.rerun()
 
 # =====================================================
 # TABS
 # =====================================================
-tab_predict, tab_history = st.tabs(["🔍 Predict", f"📜 History ({len(st.session_state.history)})"])
+tab_predict, tab_history = st.tabs(["Predict", f"History ({len(st.session_state.history)})"])
 
 with tab_predict:
     if window is not None:
@@ -270,7 +291,7 @@ with tab_predict:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        predict_clicked = st.button("🔍 Predict Psychological State", use_container_width=True)
+        predict_clicked = st.button("Run Prediction", use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
         if predict_clicked:
@@ -294,7 +315,7 @@ with tab_predict:
             badge_color = LABEL_COLORS[predicted_class]
             st.markdown(
                 f'<span class="status-badge" style="background:{badge_color};">'
-                f'● {LABEL_NAMES[predicted_class]} — {confidence:.1f}% confidence</span>',
+                f'<span class="status-dot"></span>{LABEL_NAMES[predicted_class]} — {confidence:.1f}% confidence</span>',
                 unsafe_allow_html=True
             )
             st.write("")
@@ -351,7 +372,7 @@ with tab_predict:
             csv_buffer = io.StringIO()
             report_df.to_csv(csv_buffer, index=False)
             st.download_button(
-                "⬇️ Download this result as CSV",
+                "Download this result as CSV",
                 data=csv_buffer.getvalue(),
                 file_name=f"wesad_prediction_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
@@ -388,7 +409,7 @@ with tab_history:
         full_csv = io.StringIO()
         hist_df.to_csv(full_csv, index=False)
         st.download_button(
-            "⬇️ Download full history as CSV",
+            "Download full history as CSV",
             data=full_csv.getvalue(),
             file_name="wesad_session_history.csv",
             mime="text/csv",

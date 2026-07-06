@@ -1,5 +1,7 @@
-venv/
+﻿venv/
 __pycache__/
 *.pyc
-data/
+data/*
+!data/X_demo.npy
+!data/y_demo.npy
 .vs/

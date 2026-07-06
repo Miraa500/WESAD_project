@@ -1,0 +1,14 @@
+{
+    "test_accuracy": 0.9148936170212766,
+    "test_subjects": [
+        "S15",
+        "S16",
+        "S17"
+    ],
+    "num_test_samples": 6721,
+    "classes": [
+        "Baseline",
+        "Stress",
+        "Amusement"
+    ]
+}
